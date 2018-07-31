@@ -10,7 +10,7 @@
 				<div class="col s11 right-align">
 					<router-link class="waves-effect waves-teal btn green" v-if="!user" to="/sign-in">Sign in</router-link>
 					<router-link class="waves-effect waves-teal btn green" v-if="!user" to="/sign-up">Sign up</router-link>
-					<span v-if="user" class="user-email card-panel blue-text text-darken-2">{{ user.email }}</span>
+					<router-link v-if="user" class="user-email card-panel blue-text text-darken-2" to="/dashboard">{{ user.email }}</router-link>
 					<button class="waves-effect waves-light btn" v-if="user" v-on:click="logOut">Log out</button>
 				</div>
 			</div>

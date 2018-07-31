@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import firebase from 'firebase'
+import { firebase, db } from '../../../firebase'
+import { firestore } from '../../../../node_modules/firebase'
 
 const userModule = {
   namespaced: true,
@@ -7,7 +8,8 @@ const userModule = {
     user: null,
     signUpResponse: { status: '', message: '' },
     signInResponse: { status: '', message: '' },
-    emailVerificationResponse: {status: '', message: ''}
+    emailVerificationResponse: {status: '', message: ''},
+    addUserToDatabaseResponse: {status: '', message: ''}
   },
   mutations: {
     saveUser (state) {
@@ -65,7 +67,7 @@ const userModule = {
           }
         })
         .catch(error => {
-          commit('signInError', { status: 'error', message: error })
+          commit('signInError', { status: 'error', message: error.message })
         })
     },
     signUp ({ commit }, {mail, pass}) {
@@ -76,8 +78,8 @@ const userModule = {
         .then(() => {
           commit('signUpSuccess', { status: 'success', message: 'Check your email with letter' })
         })
-        .catch(err => {
-          commit('signUpError', { status: 'error', message: err.message })
+        .catch(error => {
+          commit('signUpError', { status: 'error', message: error.message })
         })
     },
     sendEmailVerification ({ state, commit }) {
@@ -85,8 +87,8 @@ const userModule = {
       commit('emailVerificationPending', { status: 'pending', message: '' })
       user.sendEmailVerification().then(() => {
         commit('emailVerificationSuccess', { status: 'success', message: '' })
-      }).catch((err) => {
-        commit('emailVerificationError', { status: 'error', message: err.message })
+      }).catch(error => {
+        commit('emailVerificationError', { status: 'error', message: error.message })
       })
     }
   }

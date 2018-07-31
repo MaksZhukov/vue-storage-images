@@ -45,7 +45,7 @@ export default {
 	]),
 	watch: {
 		signInResponse: function ({message, status}) {
-			if (status !== 'pending'){
+			if (status!== 'pending'){
 				toast(message,3000, status);
 				if (status === 'success'){
 					this.$router.push('dashboard')

@@ -21,35 +21,35 @@ const userModule = {
       state.user = null
       Vue.localStorage.remove('user_token')
     },
-    signUpPending (state, newStateSignUpResponse) {
-      state.signUpResponse = newStateSignUpResponse
+    signUpPending (state, signUpResponse) {
+      state.signUpResponse = signUpResponse
     },
-    signUpSuccess (state, newStateSignUpResponse) {
-      state.signUpResponse = newStateSignUpResponse
+    signUpSuccess (state, signUpResponse) {
+      state.signUpResponse = signUpResponse
     },
-    signUpError (state, newStateSignUpResponse) {
-      state.signUpResponse = newStateSignUpResponse
+    signUpError (state, signUpResponse) {
+      state.signUpResponse = signUpResponse
     },
-    signInPending (state, newStateSignInResponse) {
-      state.signInResponse = newStateSignInResponse
+    signInPending (state, signInResponse) {
+      state.signInResponse = signInResponse
     },
-    signInSuccess (state, newStateSignInResponse) {
-      state.signInResponse = newStateSignInResponse
+    signInSuccess (state, signInResponse) {
+      state.signInResponse = signInResponse
     },
-    signInError (state, newStateSignInResponse) {
-      state.signInResponse = newStateSignInResponse
+    signInError (state, signInResponse) {
+      state.signInResponse = signInResponse
     },
-    signInWarning (state, newStateSignInResponse) {
-      state.signInResponse = newStateSignInResponse
+    signInWarning (state, signInResponse) {
+      state.signInResponse = signInResponse
     },
-    emailVerificationPending (state, newStateEmailVerificationResponse) {
-      state.emailVerificationResponse = newStateEmailVerificationResponse
+    emailVerificationPending (state, emailVerificationResponse) {
+      state.emailVerificationResponse = emailVerificationResponse
     },
-    emailVerificationSuccess (state, newStateEmailVerificationResponse) {
-      state.emailVerificationResponse = newStateEmailVerificationResponse
+    emailVerificationSuccess (state, emailVerificationResponse) {
+      state.emailVerificationResponse = emailVerificationResponse
     },
-    emailVerificationError (state, newStateEmailVerificationResponse) {
-      state.emailVerificationResponse = newStateEmailVerificationResponse
+    emailVerificationError (state, emailVerificationResponse) {
+      state.emailVerificationResponse = emailVerificationResponse
     }
   },
   actions: {

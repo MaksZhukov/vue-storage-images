@@ -8,8 +8,8 @@
       </div>
     </div>
 		<div class="row">
-			<div class="col s2" v-for="imageData in images">
-				<img :src="imageData" alt="" class="responsive-img">
+			<div class="col s2" v-for="image in images">
+				<img :src="image" alt="" class="responsive-img">
 			</div>
 		</div>
 		</div>

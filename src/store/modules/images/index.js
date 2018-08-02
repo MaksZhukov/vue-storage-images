@@ -5,46 +5,49 @@ const userModule = {
   namespaced: true,
   state: {
     images: [],
-    pending: false
+    responseAddImage: {},
+    responseAddImageToDB: {},
+    responseAddImageToStorage: {},
+    responseGetImageUrl: {}
   },
   mutations: {
-    addImagePending (state, stateAddImageResponse) {
-      console.log({ ...state, ...stateAddImageResponse })
-      state = { ...state, ...stateAddImageResponse }
+    addImagePending (state, responseAddImage) {
+      state.responseAddImage = responseAddImage
     },
-    addImageSuccess (state, stateAddImageResponse) {
-      state = { ...state, ...stateAddImageResponse }
+    addImageSuccess (state, responseAddImage) {
+      state.responseAddImage = responseAddImage
     },
-    addImageError (state, stateAddImageResponse) {
-      state = { ...state, ...stateAddImageResponse }
+    addImageError (state, responseAddImage) {
+      state.responseAddImage = responseAddImage
     },
-    addImageToStoragePending (state, addImageToStorageResponse) {
-      state = { ...state, ...addImageToStorageResponse }
+    addImageToStoragePending (state, responseAddImageToStorage) {
+      state.responseAddImageToStorage = responseAddImageToStorage
     },
-    addImageToStorageSuccess (state, addImageToStorageResponse) {
-      state = { ...state, ...addImageToStorageResponse }
+    addImageToStorageSuccess (state, responseAddImageToStorage) {
+      state.responseAddImageToStorage = responseAddImageToStorage
     },
-    addImageToStorageError (state, addImageToStorageResponse) {
-      state = { ...state, ...addImageToStorageResponse }
+    addImageToStorageError (state, responseAddImageToStorage) {
+      state.responseAddImageToStorage = responseAddImageToStorage
     },
-    addImageToDBPending (state, AddImageToDBResponse) {
-      state = { ...state, ...AddImageToDBResponse }
+    addImageToDBPending (state, responseAddImageToDB) {
+      state.responseAddImageToDB = responseAddImageToDB
     },
-    addImageToDBSuccess (state, AddImageToDBResponse) {
-      state = { ...state, ...AddImageToDBResponse }
+    addImageToDBSuccess (state, responseAddImageToDB) {
+      state.responseAddImageToDB = responseAddImageToDB
     },
-    addImageToDBError (state, AddImageToDBResponse) {
-			state = { ...state, ...AddImageToDBResponse }
-		},
-    getImagePending (state, getImageResponse) {
-      state = { ...state, ...getImageResponse }
+    addImageToDBError (state, responseAddImageToDB) {
+      state.responseAddImageToDB = responseAddImageToDB
     },
-    getImageSuccess (state, getImageResponse) {
-      state = { ...state, ...getImageResponse }
+    getImagePending (state, responseGetImageUrl) {
+      state.responseGetImageUrl = responseGetImageUrl
     },
-    getImageError (state, getImageResponse) {
-			state = { ...state, ...getImageResponse }
-		},
+    getImageSuccess (state, {response, imageInfo}) {
+			state.images.push(imageInfo)
+			state.responseGetImageUrl = response
+    },
+    getImageError (state, responseGetImageUrl) {
+      state.responseGetImageUrl = responseGetImageUrl
+    },
     getImagesPending (state, newStateGetImagesResponse) {
       state.images = newStateGetImagesResponse
     },
@@ -63,10 +66,9 @@ const userModule = {
           const data = doc.data()
           console.log('Document data:', doc.data())
           for (let key in data) {
-						const name = key 
-            dispatch('getImage',{id: [key], name: {key+data[key]}}).then((url) => {
-							console.log(`images/${id}/${key + data[key]}`)
-              commit('getImagesSuccess', url)
+            dispatch('getImage', {id, key, name:data[key]}).then((url) => {
+              console.log(`images/${id}/${key + data[key]}`)
+              //commit('getImagesSuccess', url)
             })
           }
         } else {
@@ -76,43 +78,51 @@ const userModule = {
       }).catch(function (error) {
         console.log('Error getting document:', error)
       })
-		},
-		getImage ({commit, state, dispatch},{id, name}){
-			return storage.ref(`images/${id}/${name}`).getDownloadURL()
-		},
-    addImage ({commit, state, dispatch}, image) {
-			try {
-				const id = this.state.userModule.user.uid
-				const num = state.images.length
-				const nameToStorage = num + image.name
+    },
+    async addImage ({commit, state, dispatch}, file) {
+      try {
+        const id = this.state.userModule.user.uid
+				const key = state.images.length
+				const { name } = file 
 				commit('addImagePending', { pending: true })
-				dispatch('addImageToDB',{id, num, name: image.name}).then(() => {
-					console.log('Document successfully written!')
-					dispatch('addImageToStorage', {id, name: nameToStorage, data: image.data}).then((doc)=>{
-						console.log(doc)
-						dispatch('getImage', {id, name: nameToStorage}).then((url) => {
-							console.log(url)
-							commit('getImagesSuccess', url)
-						})
-					})
-					.catch((error)=>{
-						commit('addImageError', { error })
-					})
+				await dispatch('addImageToDB', {id, key, name})
+				await dispatch('addImageToStorage', {id, key, name, file})
+				commit('addImageSuccess', {pending: false, status: 'success', message: 'add image succcess' })
+      } catch (error) {
+        commit('addImageError', { error, pending: false })
+      }
+		},
+		getImage ({commit}, {id, key, name}) {
+			try{
+				commit('getImagePending', { pending: false })
+			storage.ref(`images/${id}/${key + name}`).getDownloadURL()        
+				.then((url) => {
+					commit('getImageSuccess', { response: {status: 'success', pending: false, message: 'image get success'}, imageInfo: {key, name, url} })
 				})
-				.catch(function (error) {
-					commit('addImageError', { error })
-				})
+			} catch(error){
+				commit('getImageError', { pending: false, status: 'error', message: error })
 			}
-			catch(err){
-				commit('addImageError', { pending: false })
+    },
+    addImageToDB ({commit}, {id, key, name}) {
+			commit('addImageToDBPending', { pending: true })
+			return fs.collection('images').doc(id).set({[key]: name}, { merge: true })
+			.then(() => {
+				commit('addImageToDBSuccess', {status: 'success', message: 'added to database'})
+			})
+			.catch(function (error) {
+				commit('addImageError', { status: 'error', pending: false, message: error })
+			})
+    },
+    async addImageToStorage ({commit, dispatch}, {id, key, name, file}) {
+			try {
+			commit('addImageToStoragePending', { pending: true })
+			storage.ref(`images/${id}/${key + name}`).put(file).then(() => {
+				commit('addImageToStorageSuccess', { pending: false, status: 'success', message: 'add to storage success' })
+				dispatch('getImage', { id, key, name })
+			})
+			} catch(error){
+				commit('addImageToStorageError', { pending: true, status: 'error', message: error })
 			}
-
-    },
-    addImageToDB ({commit}, {id, num, name}) {
-      return fs.collection('images').doc(id).set({[num]: name}, { merge: true })
-    },
-    addImageToStorage ({commit},{id,name, data}) {
-			return storage.ref(`images/${id}/${name}`).putString(data, 'data_url')
     }
   }
 }

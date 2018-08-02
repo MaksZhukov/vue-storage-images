@@ -9,7 +9,7 @@
     </div>
 		<div class="row">
 			<div class="col s2" v-for="image in images">
-				<img :src="image" alt="" class="responsive-img">
+				<img :src="image.url" alt="" class="responsive-img">
 			</div>
 		</div>
 		</div>
@@ -51,9 +51,7 @@ export default {
 			});
 		},
 		change({target}){
-			this.readUploadedFileAsText(target.files[0]).then((response)=>{			console.log(response)
-				this.addImage(response)
-			})
+				this.addImage(target.files[0])
 		}
 	}
 }

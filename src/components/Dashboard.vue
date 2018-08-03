@@ -4,12 +4,12 @@
 		<div class="file-field input-field">
       <div class="btn-floating waves-effect waves-light red">
         <i class="material-icons">add</i>
-        <input type="file" @change="change" id="file">
+        <input type="file" multiple @change="changeAdd" id="file">
       </div>
     </div>
 		<div class="row">
 			<div class="col s2" v-for="image in images">
-				<img :src="image.url" alt="" class="responsive-img">
+				<img :src="image.url" :alt="image.name" :data-key="image.key" class="responsive-img" @click="clickImg">
 			</div>
 		</div>
 		</div>
@@ -33,26 +33,18 @@ export default {
 	methods: {
 		...mapActions('imagesModule',[
 			'getImages',
-			'addImage'
+      'addImage',
+      'deleteImage'
 		]),
-		readUploadedFileAsText(inputFile) {
-			const temporaryFileReader = new FileReader();
-
-			return new Promise((resolve, reject) => {
-				temporaryFileReader.onerror = () => {
-					temporaryFileReader.abort();
-					reject(new DOMException("Problem parsing input file."));
-				};
-
-				temporaryFileReader.onload = () => {
-					resolve({name: inputFile.name, data: temporaryFileReader.result });
-				};
-				temporaryFileReader.readAsDataURL(inputFile);
-			});
-		},
-		change({target}){
-				this.addImage(target.files[0])
-		}
+		changeAdd({target}){
+      for (let file of target.files){
+				this.addImage(file)
+      }
+    },
+    clickImg({target}){
+      const key = target.dataset.key
+      this.deleteImage(key)
+    }
 	}
 }
 </script>

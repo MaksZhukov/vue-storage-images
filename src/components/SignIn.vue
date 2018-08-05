@@ -43,16 +43,6 @@ export default {
 	computed: mapState('userModule',[
 		'signInResponse'
 	]),
-	watch: {
-		signInResponse: function ({message, status}) {
-			if (status!== 'pending'){
-				toast(message,3000, status);
-				if (status === 'success'){
-					this.$router.push('dashboard')
-				}
-			}
-		}
-	}
 }
 </script>
 

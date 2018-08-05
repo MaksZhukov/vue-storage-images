@@ -33,6 +33,10 @@ const router = new Router({
       name: 'dashboard',
       component: Dashboard,
       meta: {requireAuth: true, user: true}
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
   ]
 })

@@ -39,11 +39,15 @@
 		name: 'App',
 		methods: {
 			...mapMutations('userModule',[
-				'deleteUser',
+				'resetUser',
 				'saveUser'
 				]),
+			...mapMutations('imagesModule',[
+				'resetImages',
+				]),
 			logOut() {
-				this.deleteUser()
+				this.resetUser()
+				this.resetImages()
 				this.$router.replace('sign-in')
 			}
 		},
@@ -59,12 +63,6 @@
 </script>
 
 <style lang="sass">
-	#app
-		display: flex
-		align-items: center
-		flex-direction: column
-		justify-content: space-between
-		height: 100%
 	body,html
 		height: 100%
 		margin: 0
@@ -76,20 +74,26 @@
 				border: none
 		.user-email
 			padding: 10px
-	#toast-container
-		top: 5%
-		right: 2%
-	.component-fade
-		&-enter-active,&-leave-active
-			transition: all .3s ease
-		&-enter,&-leave-to
-			transform: translateX(10px)
-			opacity: .1
-	.success
-		background-color: #4CAF50
-	.error
-		background-color: #F44336
-	.warning
-		background-color: #ff9800
+	#app
+		display: flex
+		align-items: center
+		flex-direction: column
+		justify-content: space-between
+		height: 100%
+		#toast-container
+			top: 5%
+			right: 2%
+		.component-fade
+			&-enter-active,&-leave-active
+				transition: all .3s ease
+			&-enter,&-leave-to
+				transform: translateX(10px)
+				opacity: .1
+		.success
+			background-color: #4CAF50!important
+		.error
+			background-color: #F44336!important
+		.warning
+			background-color: #ff9800!important
 
 </style>

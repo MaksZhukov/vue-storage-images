@@ -29,7 +29,6 @@
 <script>
 import firebase from 'firebase'
 import { mapActions, mapState } from 'vuex'
-import { toast } from 'materialize-css'
 
 export default {
 	name: 'SignUp',
@@ -43,9 +42,6 @@ export default {
 	mounted () {
 		this.repassInput = document.getElementById('repass');
 	},
-	computed: mapState('userModule',[
-		'signUpResponse'
-	]),
 	methods: {
 		...mapActions('userModule',[
 			'signUp'
@@ -53,13 +49,6 @@ export default {
 		inputPass () {
 			this.repassInput.pattern = this.pass
 		},
-	},
-	watch: {
-		signUpResponse: function ({message, status}) {
-			if (status !== 'pending'){
-				toast(message,3000, status);
-			}
-		}
 	}
 }
 </script>

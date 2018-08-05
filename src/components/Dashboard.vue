@@ -4,7 +4,7 @@
 		<div class="file-field input-field">
       <div class="btn-floating waves-effect waves-light red">
         <i class="material-icons">add</i>
-        <input type="file" multiple @change="changeAdd" id="file">
+        <input type="file" multiple @change="changeAdd" id="file" accept=".jpg, .jpeg, .png">
       </div>
     </div>
 		<div class="row">
@@ -25,10 +25,13 @@ export default {
     }
 	},
 	created(){
-		this.getImages()
+		if (!this.images.length && this.responseGetImages.pending !== true){
+			this.getImages()
+		}
 	},
 	computed: mapState('imagesModule',[
-		'images'
+		'images',
+		'responseGetImages',
 	]),
 	methods: {
 		...mapActions('imagesModule',[
@@ -42,7 +45,7 @@ export default {
       }
     },
     clickImg({target}){
-      const key = target.dataset.key
+      const key = +target.dataset.key
       this.deleteImage(key)
     }
 	}

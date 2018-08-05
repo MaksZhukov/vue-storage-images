@@ -1,19 +1,25 @@
-import Vue from 'vue'
-import { storage, fs } from '../../../firebase'
+import { storage, fs, firebase } from '../../../firebase'
+
+const defaultState = {
+	images: [],
+	numberInsertNext: 0,
+	responseAddImage: {},
+	responseAddImageToDB: {},
+	responseAddImageToStorage: {},
+	responseGetImage: {},
+	responseGetImages: {},
+	responseDeleteImage: {},
+	responseDeleteImageFromDB: {},
+	responseDeleteImageFromStorage: {}
+}
 
 const userModule = {
   namespaced: true,
-  state: {
-    images: [],
-    responseAddImage: {},
-    responseAddImageToDB: {},
-    responseAddImageToStorage: {},
-    responseGetImageUrl: {},
-    responseDeleteImage: {},
-    responseDeleteImageFromDB: {},
-    responseDeleteImageFromStorage: {}
-  },
+  state: defaultState,
   mutations: {
+		updateNumberInsertNext (state, newNumberInsertNext) {
+			state.numberInsertNext = newNumberInsertNext
+		},
     addImagePending (state, responseAddImage) {
       state.responseAddImage = responseAddImage
     },
@@ -42,14 +48,14 @@ const userModule = {
     addImageToDBError (state, responseAddImageToDB) {
       state.responseAddImageToDB = responseAddImageToDB
     },
-    getImagePending (state, responseGetImageUrl) {
-      state.responseGetImageUrl = responseGetImageUrl
+    getImagePending (state, responseGetImage) {
+      state.responseGetImage = responseGetImage
     },
-    getImageSuccess (state, responseGetImageUrl) {
-      state.responseGetImageUrl = responseGetImageUrl
+    getImageSuccess (state, responseGetImage) {
+      state.responseGetImage = responseGetImage
     },
-    getImageError (state, responseGetImageUrl) {
-      state.responseGetImageUrl = responseGetImageUrl
+    getImageError (state, responseGetImage) {
+      state.responseGetImage = responseGetImage
     },
     getImagesPending (state, responseGetImages) {
       state.responseGetImages = responseGetImages
@@ -64,7 +70,9 @@ const userModule = {
       state.responseDeleteImage = responseDeleteImage
     },
     deleteImageSuccess (state, {response, key}) {
-      state.images.splice(key, 1)
+			const image = state.images.find(image => image.key === key)
+			const index = state.images.indexOf(image)
+			state.images.splice(index, 1)
       state.responseDeleteImage = response
     },
     deleteImageError (state, responseDeleteImage) {
@@ -87,19 +95,23 @@ const userModule = {
     },
     deleteImageFromStorageError (state, responseDeleteImageFromStorage) {
       state.responseDeleteImageFromStorage = responseDeleteImageFromStorage
-    }
+		},
+		resetImages (state) {
+			Object.assign(state,defaultState)
+		}
   },
   actions: {
     getImages ({commit, dispatch}) {
-      commit('getImagesPending', {pending: false})
+      commit('getImagesPending', {pending: true})
       const id = this.state.userModule.user.uid
       fs.collection('images').doc(id).get().then(function (images) {
         if (images.exists) {
           commit('getImagesSuccess', {pending: false, status: 'success', message: 'images was found'})
-          const data = images.data()
+					const data = images.data()
           for (let key in data) {
-            commit('addImageSuccess', { response: {pending: false, status: 'success', message: 'add image success'}, imageInfo: {key, name: data[key].name, url: data[key].url} })
-          }
+						commit('addImageSuccess', { response: {pending: false, status: 'success', message: 'add image success'}, imageInfo: { key: +key, name: data[key].name, url: data[key].url } })
+						commit('updateNumberInsertNext', +key)
+					}
         } else {
           commit('getImagesError', {pending: false, status: 'error', message: 'No such document'})
         }
@@ -110,7 +122,8 @@ const userModule = {
     async addImage ({commit, state, dispatch}, file) {
       try {
         const id = this.state.userModule.user.uid
-        const key = state.images.length
+				const key = state.numberInsertNext + 1
+				commit('updateNumberInsertNext', key)
         const { name } = file
         commit('addImagePending', { pending: true })
         await dispatch('addImageToStorage', {id, key, name, file})
@@ -156,20 +169,39 @@ const userModule = {
         commit('addImageToStorageError', { pending: true, status: 'error', message: error })
       }
     },
-    deleteFromDB ({commit}, key) {
+    deleteFromDB ({commit}, {key, id}) {
       commit('deleteImageFromDBPending', { pending: true })
-      commit('deleteImageFromDBSuccess', { pending: false, status: 'success', message: 'image was deleted from DB' })
-      commit('deleteImageFromDBError', { pending: false, status: 'error', message: 'error' })
+      return fs.collection('images').doc(id).update({
+        [key]: firebase.firestore.FieldValue.delete()
+      })
+        .then((doc) => {
+          commit('deleteImageFromDBSuccess', { pending: false, status: 'success', message: 'image was deleted from DB' })
+        })
+        .catch((error) => {
+          commit('deleteImageFromDBError', { pending: false, status: 'error', message: error })
+        })
     },
-    deleteFromStorage ({commit}, name) {
+    deleteFromStorage ({commit}, {id, key, name}) {
       commit('deleteImageFromStoragePending', { pending: true })
-      commit('deleteImageFromStorageSuccess', { pending: false, status: 'success', message: 'image was deleted from storage' })
-      commit('deleteImageFromStorageError', { pending: false, status: 'error', message: 'error' })
+      return storage.ref(`images/${id}/${key + name}`).delete()
+        .then((doc) => {
+          commit('deleteImageFromStorageSuccess', { pending: false, status: 'success', message: 'image was deleted from storage' })
+        })
+        .catch((error) => {
+          commit('deleteImageFromStorageError', { pending: false, status: 'error', message: error })
+        })
     },
-    deleteImage ({commit}, key) {
-      commit('deleteImagePending', { pending: true })
-      commit('deleteImageSuccess', { pending: false, status: 'success', message: 'error' })
-      commit('deleteImageError', { pending: false, status: 'error', message: 'error' })
+    async deleteImage ({commit, dispatch, state}, key) {
+      try {
+				commit('deleteImagePending', { pending: true })
+        const id = this.state.userModule.user.uid
+				const image = state.images.find(image => image.key === key)
+        await dispatch('deleteFromDB', {id, key})
+        await dispatch('deleteFromStorage', { id, key, name: image.name })
+        commit('deleteImageSuccess', {response: {pending: false, status: 'success', message: 'error' }, key})
+      } catch (error) {
+        commit('deleteImageError', { pending: false, status: 'error', message: 'error' })
+      }
     }
   }
 }

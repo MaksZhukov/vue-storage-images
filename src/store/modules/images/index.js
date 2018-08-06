@@ -1,25 +1,25 @@
 import { storage, fs, firebase } from '../../../firebase'
 
-const defaultState = {
-	images: [],
-	numberInsertNext: 0,
-	responseAddImage: {},
-	responseAddImageToDB: {},
-	responseAddImageToStorage: {},
-	responseGetImage: {},
-	responseGetImages: {},
-	responseDeleteImage: {},
-	responseDeleteImageFromDB: {},
-	responseDeleteImageFromStorage: {}
-}
+const getDefaultState = () => ({
+  images: [],
+  numberInsertNext: 0,
+  responseAddImage: {},
+  responseAddImageToDB: {},
+  responseAddImageToStorage: {},
+  responseGetImage: {},
+  responseGetImages: {},
+  responseDeleteImage: {},
+  responseDeleteImageFromDB: {},
+  responseDeleteImageFromStorage: {}
+})
 
 const userModule = {
   namespaced: true,
-  state: defaultState,
+  state: getDefaultState(),
   mutations: {
-		updateNumberInsertNext (state, newNumberInsertNext) {
-			state.numberInsertNext = newNumberInsertNext
-		},
+    updateNumberInsertNext (state, newNumberInsertNext) {
+      state.numberInsertNext = newNumberInsertNext
+    },
     addImagePending (state, responseAddImage) {
       state.responseAddImage = responseAddImage
     },
@@ -70,9 +70,9 @@ const userModule = {
       state.responseDeleteImage = responseDeleteImage
     },
     deleteImageSuccess (state, {response, key}) {
-			const image = state.images.find(image => image.key === key)
-			const index = state.images.indexOf(image)
-			state.images.splice(index, 1)
+      const image = state.images.find(image => image.key === key)
+      const index = state.images.indexOf(image)
+      state.images.splice(index, 1)
       state.responseDeleteImage = response
     },
     deleteImageError (state, responseDeleteImage) {
@@ -95,10 +95,13 @@ const userModule = {
     },
     deleteImageFromStorageError (state, responseDeleteImageFromStorage) {
       state.responseDeleteImageFromStorage = responseDeleteImageFromStorage
-		},
-		resetImages (state) {
-			Object.assign(state,defaultState)
-		}
+    },
+    resetImages (state) {
+      const defaultState = getDefaultState()
+      Object.keys(defaultState).forEach(key => {
+        state[key] = defaultState[key]
+      })
+    }
   },
   actions: {
     getImages ({commit, dispatch}) {
@@ -107,11 +110,11 @@ const userModule = {
       fs.collection('images').doc(id).get().then(function (images) {
         if (images.exists) {
           commit('getImagesSuccess', {pending: false, status: 'success', message: 'images was found'})
-					const data = images.data()
+          const data = images.data()
           for (let key in data) {
-						commit('addImageSuccess', { response: {pending: false, status: 'success', message: 'add image success'}, imageInfo: { key: +key, name: data[key].name, url: data[key].url } })
-						commit('updateNumberInsertNext', +key)
-					}
+            commit('addImageSuccess', { response: {pending: false, status: 'success', message: 'add image success'}, imageInfo: { key: +key, name: data[key].name, url: data[key].url } })
+            commit('updateNumberInsertNext', +key)
+          }
         } else {
           commit('getImagesError', {pending: false, status: 'error', message: 'No such document'})
         }
@@ -122,8 +125,8 @@ const userModule = {
     async addImage ({commit, state, dispatch}, file) {
       try {
         const id = this.state.userModule.user.uid
-				const key = state.numberInsertNext + 1
-				commit('updateNumberInsertNext', key)
+        const key = state.numberInsertNext + 1
+        commit('updateNumberInsertNext', key)
         const { name } = file
         commit('addImagePending', { pending: true })
         await dispatch('addImageToStorage', {id, key, name, file})
@@ -193,9 +196,9 @@ const userModule = {
     },
     async deleteImage ({commit, dispatch, state}, key) {
       try {
-				commit('deleteImagePending', { pending: true })
+        commit('deleteImagePending', { pending: true })
         const id = this.state.userModule.user.uid
-				const image = state.images.find(image => image.key === key)
+        const image = state.images.find(image => image.key === key)
         await dispatch('deleteFromDB', {id, key})
         await dispatch('deleteFromStorage', { id, key, name: image.name })
         commit('deleteImageSuccess', {response: {pending: false, status: 'success', message: 'error' }, key})

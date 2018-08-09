@@ -65,7 +65,7 @@
 <style lang="sass">
 
   body,html
-    height: 100%
+    min-height: 100%
     margin: 0
   header,footer
     padding: 20px

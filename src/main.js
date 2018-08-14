@@ -13,7 +13,7 @@ Vue.config.productionTip = false
 
 sync(store, router)
 
-firebase.auth().onAuthStateChanged((user) => {
+firebase.auth().onAuthStateChanged(() => {
   new Vue({ // eslint-disable-line no-new
     el: '#app',
     router,

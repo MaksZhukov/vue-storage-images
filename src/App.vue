@@ -80,7 +80,7 @@
     align-items: center
     flex-direction: column
     justify-content: space-between
-    height: 100%
+    min-height: 100vh
   #toast-container
     top: 5%!important
     right: 2%!important
@@ -96,5 +96,7 @@
     background-color: #F44336!important
   .warning
     background-color: #ff9800!important
+  .responsive-img
+    max-height: 100%
 
 </style>

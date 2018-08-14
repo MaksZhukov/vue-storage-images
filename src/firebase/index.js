@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import VueLocalStorage from 'vue-localstorage'
 import firebase from 'firebase/app'
-import 'firebase/firestore'
 import VueFire from 'vuefire'
 
 Vue.use(VueLocalStorage)
@@ -19,8 +18,8 @@ firebase.initializeApp(config)
 
 const db = firebase.database()
 const fs = firebase.firestore()
-const storage = firebase.storage()
+const st = firebase.storage()
 
 fs.settings({ timestampsInSnapshots: true })
 
-export { firebase, db, fs, storage }
+export { firebase, db, fs, st }

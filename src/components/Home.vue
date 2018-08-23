@@ -10,7 +10,7 @@ export default {
   name: 'Home',
   data () {
     return {
-      msg: 'Welcome to vue storage project'
+      msg: 'Welcome to storage your images'
     }
 	},
 }

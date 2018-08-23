@@ -1,39 +1,50 @@
 <template>
   <div class="dashboard">
-		<div class="container">
+		<div class="container dashboard-container">
 			<div class="row">
 				<div class="col s12">
 					<button class="btn-floating waves-effect file-field input-field waves-light red btn-add-image">
 						<i class="material-icons">add</i>
-						<input type="file" multiple @change="changeAdd" id="file" accept=".jpg, .jpeg, .png">
+						<input type="file" multiple @change="changeAdd" accept=".jpg, .jpeg, .png">
 					</button>
-					<button class="btn-floating waves-effect waves-light red" @click="clickRemove">
+					<button class="btn-floating waves-effect waves-light red" @click="isBtnRemoveActive = !isBtnRemoveActive">
 						<i class="material-icons">remove</i>
 					</button>
+          <button class="btn-floating waves-effect waves-light red" @click="isBtnDownloadActive = !isBtnDownloadActive">
+						<i class="material-icons">file_download</i>
+					</button>
 					<button v-if="isBtnRemoveActive" :class="['btn',images.some(imageInfo => imageInfo.selected === true ) ? '' : 'disabled']" @click="clickDelete">delete</button>
+          <button v-if="isBtnDownloadActive" :class="['btn',images.some(imageInfo => imageInfo.selected === true ) ? '' : 'disabled']" @click="clickDownload">download</button>
 				</div>
 		</div>
-			<transition-group name="list" tag="div" class="list-images" :style="{height: listImagesHeight}">
+			<transition-group name="list" tag="div" class="list-images">
 			<div :class="[image.selected ? 'list-images-item-selected' : '', 'list-images-item']" v-for="image in images.slice((paginationNum-1)*countImageOnPagination,paginationNum*countImageOnPagination)" :key="image.key">
 				<img :src="image.url" :alt="image.name" :data-key="image.key" class="responsive-img" @click="clickImg">
 			</div>
 			</transition-group>
       <ul class="pagination center-align" v-if="images.length">
-        <li :class="[number === paginationNum ? 'active' : '','waves-effect']" v-for="number in Math.ceil(images.length/countImageOnPagination)" :key="number"><a @click="clickPaginationItem(number)" :href="'#'+number">{{number}}</a></li>
+        <li v-if="Math.ceil(images.length/countImageOnPagination) >= 2" :class="[paginationNum === 1 ? 'disabled' : 'waves-effect']"><a @click="clickPaginationItem(paginationNum-1)" :href="'#'+paginationNum"><i class="material-icons">chevron_left</i></a></li>
+        <li v-if="paginationNum < number+countVisiblePaginationNum && paginationNum > number-countVisiblePaginationNum" :class="[number === paginationNum ? 'active' : '','waves-effect']" v-for="number in Math.ceil(this.images.length/this.countImageOnPagination)" :key="number"><a @click="clickPaginationItem(number)" :href="'#'+number">{{number}}</a></li>
+        <li v-if="Math.ceil(images.length/countImageOnPagination) >= 2" :class="[Math.ceil(this.images.length/this.countImageOnPagination) === paginationNum ? 'disabled' : 'waves-effect']"><a @click="clickPaginationItem(paginationNum+1)" :href="'#'+paginationNum"><i class="material-icons">chevron_right</i></a></li>
       </ul>
+        <div class="progress" v-if="pendingWorkWithImages">
+          <div class="indeterminate"></div>
+        </div>
 		</div>
   </div>
 </template>
 
 <script>
-import { mapMutations, mapState, mapActions } from "vuex";
+import { mapMutations, mapState, mapActions, mapGetters } from "vuex";
 export default {
   name: "Dashboard",
   data() {
     return {
       paginationNum: 1,
+      countVisiblePaginationNum: 10,
       countImageOnPagination: 12,
-      isBtnRemoveActive: false
+      isBtnRemoveActive: false,
+      isBtnDownloadActive: false
     };
   },
   created() {
@@ -42,15 +53,11 @@ export default {
     }
   },
   computed: {
-    ...mapState("imagesModule", ["images", "responseGetImages"]),
-    listImagesHeight: ()=>{
-      if (this.images){
-        const currentImageOnPagination = this.images.slice((paginationNum-1)*countImageOnPagination,paginationNum*countImageOnPagination).length
-        return currentImageOnPagination > countImageOnPagination / 2 && currentImageOnPagination / countImageOnPagination <=1 ? '310px' : '150px'
-      }
-    }},
+    ...mapState("imagesModule", ["images", "responseGetImages","responseDeleteImages","responseAddImage"]),
+    ...mapGetters("imagesModule",["pendingWorkWithImages"])
+  },
   methods: {
-    ...mapActions("imagesModule", ["getImages", "addImage", "deleteImages"]),
+    ...mapActions("imagesModule", ["getImages", "addImage", "deleteImages","downloadImages"]),
     ...mapMutations("imagesModule", ["selectImage"]),
     changeAdd({ target }) {
       for (let file of target.files) {
@@ -58,21 +65,30 @@ export default {
       }
     },
     clickImg({ target }) {
-      if (this.isBtnRemoveActive) {
+      if (this.isBtnRemoveActive || this.isBtnDownloadActive ) {
         const key = +target.dataset.key;
         this.selectImage(key);
       }
-    },
-    clickRemove(event) {
-      this.isBtnRemoveActive = !this.isBtnRemoveActive;
     },
     clickDelete(event) {
       if (this.isBtnRemoveActive) {
         this.deleteImages();
       }
     },
-    clickPaginationItem(number){
-      this.paginationNum = number
+    clickDownload(){
+      if (this.isBtnDownloadActive) {
+        this.downloadImages()
+      }
+    },
+    clickPaginationItem(number) {
+      if (
+        number === 0 ||
+        number ===
+          Math.ceil(this.images.length / this.countImageOnPagination) + 1
+      ) {
+        return;
+      }
+      this.paginationNum = number;
     }
   }
 };
@@ -83,20 +99,27 @@ export default {
 .dashboard
 	width: 100%
 	min-height: 300px
-	padding: 20px 0 
+	padding: 20px 0
+.dashboard-container
+  position: relative
+.progress
+  position: absolute
+  width: 100%
 .btn-add-image
-	margin: 0 10px 0 0
+	margin: 0
 .list-images
 	display: grid
 	grid-gap: 10px
 	grid-template-columns: repeat(6,1fr)
 	grid-auto-rows: 150px
 .list-images-item
+  padding: 10px
   display: flex
   align-items: center
   justify-content: center
   &-selected
-    border: 2px solid red
+    border: 2px solid #da9b9b
+    padding: 8px
 .list-enter, .list-leave-to /* .list-leave-active до версии 2.1.8 */
   opacity: 0
   transform: translateX(10px)
@@ -106,4 +129,5 @@ export default {
   transition: all .5s
   position: absolute
   transform: translateX(-30px)
+
 </style>

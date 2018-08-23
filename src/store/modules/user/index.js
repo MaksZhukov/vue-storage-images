@@ -4,11 +4,11 @@ import { toast } from 'materialize-css'
 import { firebase } from '../../../firebase'
 
 const getDefaultState = () => ({
-	user: null,
-	signUpResponse: {},
-	signInResponse: {},
-	emailVerificationResponse: {},
-	addUserToDatabaseResponse: {}
+  user: null,
+  signUpResponse: {},
+  signInResponse: {},
+  emailVerificationResponse: {},
+  addUserToDatabaseResponse: {}
 })
 
 const userModule = {
@@ -21,90 +21,85 @@ const userModule = {
       Vue.localStorage.set('user_token', JSON.stringify(user.qa))
     },
     resetUser (state) {
-			Vue.localStorage.remove('user_token')
-			firebase.auth().signOut()
-			const defaultState = getDefaultState()
-			Object.keys(defaultState).forEach(key => {
+      Vue.localStorage.remove('user_token')
+      firebase.auth().signOut()
+      const defaultState = getDefaultState()
+      Object.keys(defaultState).forEach(key => {
         state[key] = defaultState[key]
       })
     },
-    signUpPending (state, signUpResponse) {
-      state.signUpResponse = signUpResponse
+    signUpPending (state, payload) {
+      state.signUpResponse = payload
     },
-    signUpSuccess (state, signUpResponse) {
-			state.signUpResponse = signUpResponse
+    signUpSuccess (state, payload) {
+      state.signUpResponse = payload
     },
-    signUpError (state, signUpResponse) {
-      state.signUpResponse = signUpResponse
+    signUpError (state, payload) {
+      state.signUpResponse = payload
     },
-    signInPending (state, signInResponse) {
-      state.signInResponse = signInResponse
+    signInPending (state, payload) {
+      state.signInResponse = payload
     },
-    signInSuccess (state, signInResponse) {
-      state.signInResponse = signInResponse
+    signInSuccess (state, payload) {
+      state.signInResponse = payload
     },
-    signInError (state, signInResponse) {
-      state.signInResponse = signInResponse
+    signInError (state, payload) {
+      state.signInResponse = payload
     },
-    signInWarning (state, signInResponse) {
-      state.signInResponse = signInResponse
+    signInWarning (state, payload) {
+      state.signInResponse = payload
     },
-    emailVerificationPending (state, emailVerificationResponse) {
-      state.emailVerificationResponse = emailVerificationResponse
+    emailVerificationPending (state, payload) {
+      state.emailVerificationResponse = payload
     },
-    emailVerificationSuccess (state, emailVerificationResponse) {
-      state.emailVerificationResponse = emailVerificationResponse
+    emailVerificationSuccess (state, payload) {
+      state.emailVerificationResponse = payload
     },
-    emailVerificationError (state, emailVerificationResponse) {
-      state.emailVerificationResponse = emailVerificationResponse
+    emailVerificationError (state, payload) {
+      state.emailVerificationResponse = payload
     }
   },
   actions: {
     async signIn ({commit, state}, {mail, pass}) {
-      commit('signUpPending', { pending: true, status: '', message: '' })
-      await firebase
-        .auth()
-        .signInWithEmailAndPassword(mail, pass)
-        .then(({ user }) => {
-          if (user.emailVerified) {
-            commit('saveUser', user)
-            commit('signInSuccess', { status: 'success', message: 'successful entry', pending: false })
-          } else {
-            commit('signInWarning', { status: 'warning', message: 'confirm your mail', pending: false })
-          }
-        })
-        .catch(error => {
-          commit('signInError', { status: 'error', message: error.message })
-				})
-				const {message, status} = state.signInResponse
-				toast(message, 3000, status)
-				if (status === 'success'){
-					router.push('dashboard')
-				}
+      try {
+        commit('signUpPending', { pending: true })
+        const { user } = await firebase.auth().signInWithEmailAndPassword(mail, pass)
+        if (user.emailVerified) {
+          commit('saveUser', user)
+          commit('signInSuccess', { status: 'success', message: 'successful entry', pending: false })
+        } else {
+          commit('signInWarning', { status: 'warning', message: 'confirm your mail', pending: false })
+        }
+        const {message, status} = state.signInResponse
+        toast(message, 3000, status)
+        if (status === 'success') {
+          router.push('dashboard')
+        }
+      } catch (error) {
+        commit('signInError', { status: 'error', message: error, pending: false })
+      }
     },
     async signUp ({ state, commit, dispatch }, {mail, pass}) {
-      commit('signUpPending', { pending: true })
-      await firebase
-        .auth()
-        .createUserWithEmailAndPassword(mail, pass)
-        .then(async () => {
-          await dispatch('sendEmailVerification')
-          commit('signUpSuccess', { status: 'success', message: 'Check your email with letter', pending: false })
-        })
-        .catch(error => {
-          commit('signUpError', { status: 'error', message: error.message, pending: false })
-				})
-				const {message, status} = state.signUpResponse
-				toast(message,3000,status)
+      try {
+        commit('signUpPending', { pending: true })
+        await firebase.auth().createUserWithEmailAndPassword(mail, pass)
+        await dispatch('sendEmailVerification')
+        commit('signUpSuccess', { status: 'success', message: 'Check your email with letter', pending: false })
+        const {message, status} = state.signUpResponse
+        toast(message, 3000, status)
+      } catch (error) {
+        commit('signUpError', { status: 'error', message: error, pending: false })
+      }
     },
-    sendEmailVerification ({ state, commit }) {
-      const user = firebase.auth().currentUser
-      commit('emailVerificationPending', { pending: true })
-      return user.sendEmailVerification().then(() => {
+    async sendEmailVerification ({ state, commit }) {
+      try {
+        const user = firebase.auth().currentUser
+        commit('emailVerificationPending', { pending: true })
+        await user.sendEmailVerification()
         commit('emailVerificationSuccess', { status: 'success', message: 'mail was send', pending: false })
-      }).catch(error => {
-        commit('emailVerificationError', { status: 'error', message: error.message, pending: false })
-      })
+      } catch (error) {
+        commit('emailVerificationError', { status: 'error', message: error, pending: false })
+      }
     }
   }
 }

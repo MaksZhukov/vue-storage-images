@@ -9,35 +9,43 @@ Vue.use(Router)
 
 const router = new Router({
   mode: 'history',
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Home,
-      meta: {user: true}
-    },
-    {
-      path: '/sign-in',
-      name: 'signin',
-      component: SignIn,
-      meta: {user: false}
-    },
-    {
-      path: '/sign-up',
-      name: 'signup',
-      component: SignUp,
-      meta: {user: false}
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: Dashboard,
-      meta: {requireAuth: true, user: true}
-    },
-    {
-      path: '*',
-      redirect: '/'
+  routes: [{
+    path: '/',
+    name: 'home',
+    component: Home,
+    meta: {
+      user: true
     }
+  },
+  {
+    path: '/sign-in',
+    name: 'signin',
+    component: SignIn,
+    meta: {
+      user: false
+    }
+  },
+  {
+    path: '/sign-up',
+    name: 'signup',
+    component: SignUp,
+    meta: {
+      user: false
+    }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: Dashboard,
+    meta: {
+      requireAuth: true,
+      user: true
+    }
+  },
+  {
+    path: '*',
+    redirect: '/'
+  }
   ]
 })
 router.beforeEach((to, from, next) => {

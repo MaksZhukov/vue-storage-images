@@ -1,11 +1,12 @@
 import Vue from 'vue'
 import router from '../../../router'
 import { toast } from 'materialize-css'
-import { firebase } from '../../../firebase'
+import { firebase, googleProvider } from '../../../firebase'
 
 const getDefaultState = () => ({
   user: null,
   signUpResponse: {},
+  signInWithGoogleResponse: {},
   signInResponse: {},
   emailVerificationResponse: {},
   addUserToDatabaseResponse: {}
@@ -37,6 +38,15 @@ const userModule = {
     signUpError (state, payload) {
       state.signUpResponse = payload
     },
+    signInWithGooglePending (state, payload) {
+      state.signInWithGoogleResponse = payload
+    },
+    signInWithGoogleSuccess (state, payload) {
+      state.signInWithGoogleResponse = payload
+    },
+    signInWithGoogleError (state, payload) {
+      state.signInWithGoogleResponse = payload
+    },
     signInPending (state, payload) {
       state.signInResponse = payload
     },
@@ -62,7 +72,7 @@ const userModule = {
   actions: {
     async signIn ({commit, state}, {mail, pass}) {
       try {
-        commit('signUpPending', { pending: true })
+        commit('signInPending', { pending: true })
         const { user } = await firebase.auth().signInWithEmailAndPassword(mail, pass)
         if (user.emailVerified) {
           commit('saveUser', user)
@@ -77,6 +87,21 @@ const userModule = {
         }
       } catch (error) {
         commit('signInError', { status: 'error', message: error, pending: false })
+      }
+    },
+    async signInWithGoogle ({state, commit}) {
+      try {
+        commit('signInWithGooglePending', { pending: true })
+        const { user } = await firebase.auth().signInWithPopup(googleProvider)
+        commit('signInWithGoogleSuccess', { status: 'success', message: 'successful entry', pending: false })
+        commit('saveUser', user)
+        const {message, status} = state.signInWithGoogleResponse
+        toast(message, 3000, status)
+        router.push('dashboard')
+      } catch (error) {
+        const {message} = error
+        commit('signInWithGoogleError', { status: 'error', message, pending: false })
+        toast(message, 3000, 'error')
       }
     },
     async signUp ({ state, commit, dispatch }, {mail, pass}) {

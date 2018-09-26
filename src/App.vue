@@ -76,6 +76,7 @@ export default {
     flex-direction: column
     justify-content: space-between
     min-height: 100vh
+    overflow: hidden
   #toast-container
     top: 5%!important
     right: 2%!important

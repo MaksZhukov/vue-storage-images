@@ -15,6 +15,14 @@ const getDefaultState = () => ({
 const userModule = {
   namespaced: true,
   state: getDefaultState(),
+  getters: {
+    getUser: state => {
+      return state.user
+    },
+    getSignInResponse: state => {
+      return state.signInResponse
+    }
+  },
   mutations: {
     saveUser (state) {
       const user = firebase.auth().currentUser

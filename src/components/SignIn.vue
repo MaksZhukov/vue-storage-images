@@ -29,7 +29,7 @@
 
 <script>
 import firebase from "firebase";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 import { toast } from "materialize-css";
 
 export default {
@@ -41,9 +41,9 @@ export default {
     };
   },
   methods: {
-    ...mapActions("userModule", ["signIn","signInWithGoogle"])
+    ...mapActions("userModule", ["signIn", "signInWithGoogle"])
   },
-  computed: mapState("userModule", ["signInResponse"])
+  computed: mapGetters("userModule", { signInResponse: "getSignInResponse" })
 };
 </script>
 

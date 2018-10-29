@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { mapMutations, mapState, mapActions, mapGetters } from "vuex";
+import { mapMutations, mapActions, mapGetters } from "vuex";
 export default {
   name: "Dashboard",
   data() {
@@ -63,19 +63,23 @@ export default {
     }
   },
   computed: {
-    ...mapState("imagesModule", [
-      "images",
-      "responseGetImages",
-      "responseDeleteImages",
-      "responseAddImage"
-    ]),
+    ...mapGetters("imagesModule", {
+      images: 'getImages',
+      responseGetImages: 'getResponseGetImages',
+      responseDeleteImages: 'getResponseDeleteImages',
+      responseAddImage: 'getResponseAddImage',
+    }),
     ...mapGetters("imagesModule", ["pendingWorkWithImages"]),
-    paginationNumNext(){
-      let countPagination = Math.ceil(this.images.length/this.countImageOnPagination)
-      return countPagination === this.paginationNum ? countPagination : this.paginationNum + 1
+    paginationNumNext() {
+      let countPagination = Math.ceil(
+        this.images.length / this.countImageOnPagination
+      );
+      return countPagination === this.paginationNum
+        ? countPagination
+        : this.paginationNum + 1;
     },
-    paginationNumPrev(){
-      return this.paginationNum === 1 ? 1 : this.paginationNum - 1
+    paginationNumPrev() {
+      return this.paginationNum === 1 ? 1 : this.paginationNum - 1;
     }
   },
   methods: {

@@ -18,7 +18,7 @@
       </div>
     </header>
     <transition name="component-fade" mode="out-in">
-      <router-view/>
+      <router-view />
     </transition>
     <footer class="page-footer  blue-grey">
       <div class="row">
@@ -34,7 +34,7 @@
   </div>
 </template>
 <script>
-import { mapMutations, mapState, mapActions } from "vuex";
+import { mapMutations, mapState, mapActions, mapGetters } from "vuex";
 import firebase from "firebase";
 
 export default {
@@ -48,7 +48,7 @@ export default {
       this.$router.replace("sign-in");
     }
   },
-  computed: mapState("userModule", ["user"]),
+  computed: mapGetters("userModule", { user: "getUser" }),
   created() {
     if (this.$localStorage.get("user_token") !== null) {
       this.saveUser();

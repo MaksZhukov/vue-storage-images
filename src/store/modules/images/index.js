@@ -26,6 +26,18 @@ const userModule = {
     },
     pendingWorkWithImages: state => {
       return state.responseAddImage.pending === true || state.responseDeleteImages.pending === true || state.responseGetImages.pending === true
+    },
+    getImages: state => {
+      return state.images
+    },
+    getResponseGetImages: state => {
+      return state.responseGetImages
+    },
+    getResponseDeleteImages: state => {
+      return state.responseDeleteImages
+    },
+    getResponseAddImages: state => {
+      return state.responseAddImage
     }
   },
   mutations: {

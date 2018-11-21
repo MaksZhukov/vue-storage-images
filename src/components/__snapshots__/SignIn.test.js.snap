@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SignIn component SignIn component render correctly 1`] = `
+<div class="signin">
+  <div class="row">
+    <form class="col s12">
+      <div class="row">
+        <div class="col s12">
+          <div class="input-field"><input id="email" type="email" required="required" class="validate"> <label for="email">Email</label></div>
+          <div class="input-field"><input id="pass" type="password" required="required" class="validate"> <label for="pass">Password</label></div>
+          <div class="row">
+            <div class="input-field col"><button type="submit" class="btn pulse">Sign In</button></div>
+            <div class="input-field col"><button type="button" class="btn pulse red sign-in-with-google">Sign In With Google</button></div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+`;

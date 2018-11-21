@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueLocalStorage from 'vue-localstorage'
-import firebase from 'firebase/app'
+import firebase from 'firebase'
 import VueFire from 'vuefire'
 
 Vue.use(VueLocalStorage)
@@ -13,7 +13,6 @@ let config = {
   storageBucket: 'vue-storage-images.appspot.com',
   messagingSenderId: '800715798272'
 }
-
 firebase.initializeApp(config)
 
 const db = firebase.database()

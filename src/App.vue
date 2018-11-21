@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <header class="page-header  blue-grey">
+    <header class="page-header blue-grey">
       <div class="row">
         <div class="col s1">
           <div class="logo">
@@ -12,15 +12,19 @@
         <div class="col s11 right-align">
           <router-link class="waves-effect waves-teal btn green" v-if="!user" to="/sign-in">Sign in</router-link>
           <router-link class="waves-effect waves-teal btn green" v-if="!user" to="/sign-up">Sign up</router-link>
-          <router-link v-if="user" class="user-email card-panel blue-text text-darken-2" to="/dashboard">{{ user.email }}</router-link>
+          <router-link
+            v-if="user"
+            class="user-email card-panel blue-text text-darken-2"
+            to="/dashboard"
+          >{{ user.email }}</router-link>
           <button class="waves-effect waves-light btn" v-if="user" v-on:click="logOut">Log out</button>
         </div>
       </div>
     </header>
     <transition name="component-fade" mode="out-in">
-      <router-view />
+      <router-view/>
     </transition>
-    <footer class="page-footer  blue-grey">
+    <footer class="page-footer blue-grey">
       <div class="row">
         <div class="col s1">
           <div class="logo">
@@ -34,27 +38,26 @@
   </div>
 </template>
 <script>
-import { mapMutations, mapState, mapActions, mapGetters } from "vuex";
-import firebase from "firebase";
+import { mapMutations, mapGetters } from 'vuex'
 
 export default {
-  name: "App",
+  name: 'App',
   methods: {
-    ...mapMutations("userModule", ["resetUser", "saveUser"]),
-    ...mapMutations("imagesModule", ["resetImages"]),
-    logOut() {
-      this.resetUser();
-      this.resetImages();
-      this.$router.replace("sign-in");
+    ...mapMutations('userModule', ['resetUser', 'saveUser']),
+    ...mapMutations('imagesModule', ['resetImages']),
+    logOut () {
+      this.resetUser()
+      this.resetImages()
+      this.$router.replace('sign-in')
     }
   },
-  computed: mapGetters("userModule", { user: "getUser" }),
-  created() {
-    if (this.$localStorage.get("user_token") !== null) {
-      this.saveUser();
+  computed: mapGetters('userModule', { user: 'getUser' }),
+  created () {
+    if (this.$localStorage.get('user_token') !== null) {
+      this.saveUser()
     }
   }
-};
+}
 </script>
 
 <style lang="sass">

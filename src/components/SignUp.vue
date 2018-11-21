@@ -9,11 +9,25 @@
               <label for="email">Email</label>
             </div>
             <div class="input-field">
-              <input id="pass" type="password" class="validate" required v-model="pass" @input="inputPass()">
+              <input
+                id="pass"
+                type="password"
+                class="validate"
+                required
+                v-model="pass"
+                @input="inputPass()"
+              >
               <label for="pass">Password</label>
             </div>
             <div class="input-field">
-              <input id="repass" type="password" class="validate" required pattern="input">
+              <input
+                ref="repass"
+                id="repass"
+                type="password"
+                class="validate"
+                required
+                pattern="input"
+              >
               <label for="repass">Repeat password</label>
             </div>
             <div class="row">
@@ -21,7 +35,11 @@
                 <button class="btn pulse" type="submit">Sign Up</button>
               </div>
               <div class="input-field col">
-                <button class="btn red pulse" type="button" @click="signInWithGoogle()">Sign Up with Google</button>
+                <button
+                  class="btn red pulse"
+                  type="button"
+                  @click="signInWithGoogle()"
+                >Sign Up with Google</button>
               </div>
             </div>
           </div>
@@ -32,34 +50,29 @@
 </template>
 
 <script>
-import firebase from "firebase";
-import { mapActions } from "vuex";
+import { mapActions } from 'vuex'
 
 export default {
-  name: "SignUp",
+  name: 'SignUp',
   data: () => {
     return {
-      mail: "",
-      pass: "",
-      repassInput: null
-    };
-  },
-  mounted() {
-    this.repassInput = document.getElementById("repass");
+      mail: '',
+      pass: ''
+    }
   },
   methods: {
-    ...mapActions("userModule", ["signUp","signInWithGoogle"]),
-    inputPass() {
-      this.repassInput.pattern = this.pass;
+    ...mapActions('userModule', ['signUp', 'signInWithGoogle']),
+    inputPass () {
+      const { repass } = this.$refs
+      repass.pattern = this.pass
     }
   }
-};
+}
 </script>
-
 
 <style lang="sass" scoped>
 .signup
-	max-width: 600px
-	width: 100%
-	margin: auto
+  max-width: 600px
+  width: 100%
+  margin: auto
 </style>

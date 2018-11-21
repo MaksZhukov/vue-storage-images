@@ -17,7 +17,11 @@
                 <button type="submit" class="btn pulse">Sign In</button>
               </div>
               <div class="input-field col">
-                <button type="button" class="btn pulse red" @click="signInWithGoogle()">Sign In With Google</button>
+                <button
+                  type="button"
+                  class="btn pulse red sign-in-with-google"
+                  @click="signInWithGoogle()"
+                >Sign In With Google</button>
               </div>
             </div>
           </div>
@@ -28,28 +32,26 @@
 </template>
 
 <script>
-import firebase from "firebase";
-import { mapActions, mapGetters } from "vuex";
-import { toast } from "materialize-css";
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
-  name: "SignIn",
+  name: 'SignIn',
   data: () => {
     return {
-      mail: "",
-      pass: ""
-    };
+      mail: '',
+      pass: ''
+    }
   },
   methods: {
-    ...mapActions("userModule", ["signIn", "signInWithGoogle"])
+    ...mapActions('userModule', ['signIn', 'signInWithGoogle'])
   },
-  computed: mapGetters("userModule", { signInResponse: "getSignInResponse" })
-};
+  computed: mapGetters('userModule', { signInResponse: 'getSignInResponse' })
+}
 </script>
 
 <style lang="sass" scoped>
 .signin
-	max-width: 600px
-	width: 100%
-	margin: auto
+  max-width: 600px
+  width: 100%
+  margin: auto
 </style>

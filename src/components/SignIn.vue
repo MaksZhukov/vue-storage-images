@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'SignIn',
@@ -44,8 +44,7 @@ export default {
   },
   methods: {
     ...mapActions('userModule', ['signIn', 'signInWithGoogle'])
-  },
-  computed: mapGetters('userModule', { signInResponse: 'getSignInResponse' })
+  }
 }
 </script>
 
@@ -54,4 +53,5 @@ export default {
   max-width: 600px
   width: 100%
   margin: auto
+  padding: 10px 0;
 </style>

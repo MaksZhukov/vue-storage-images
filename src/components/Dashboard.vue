@@ -3,40 +3,46 @@
     <div class="container dashboard-container">
       <div class="row">
         <div class="col s12">
-          <button
-            class="btn-floating waves-effect file-field input-field waves-light red btn-add-image"
-          >
-            <i class="material-icons">add</i>
-            <input type="file" multiple @change="changeAdd" accept=".jpg, .jpeg, .png">
-          </button>
-          <button
-            class="btn-floating waves-effect waves-light red"
-            @click="isBtnRemoveActive = !isBtnRemoveActive"
-          >
-            <i class="material-icons">remove</i>
-          </button>
-          <button
-            class="btn-floating waves-effect waves-light red"
-            @click="isBtnDownloadActive = !isBtnDownloadActive"
-          >
-            <i class="material-icons">file_download</i>
-          </button>
-          <button
-            v-if="isBtnRemoveActive"
-            :class="['btn',images.some(imageInfo => imageInfo.selected === true ) ? '' : 'disabled']"
-            @click="clickDelete"
-          >delete</button>
-          <button
-            v-if="isBtnDownloadActive"
-            :class="['btn',images.some(imageInfo => imageInfo.selected === true ) ? '' : 'disabled']"
-            @click="clickDownload"
-          >download</button>
+          <div class="row">
+            <div class="col s12 m4 l3">
+              <button
+                class="btn-floating waves-effect file-field input-field waves-light red btn-add-image"
+              >
+                <i class="material-icons">add</i>
+                <input type="file" multiple @change="changeAdd" accept=".jpg, .jpeg, .png">
+              </button>
+              <button
+                class="btn-floating waves-effect waves-light red"
+                @click="isBtnRemoveActive = !isBtnRemoveActive"
+              >
+                <i class="material-icons">remove</i>
+              </button>
+              <button
+                class="btn-floating waves-effect waves-light red"
+                @click="isBtnDownloadActive = !isBtnDownloadActive"
+              >
+                <i class="material-icons">file_download</i>
+              </button>
+            </div>
+            <div class="col s12 m6">
+              <button
+                v-if="isBtnRemoveActive"
+                :class="['btn',images.some(imageInfo => imageInfo.selected === true ) ? '' : 'disabled']"
+                @click="clickDelete"
+              >delete</button>
+              <button
+                v-if="isBtnDownloadActive"
+                :class="['btn',images.some(imageInfo => imageInfo.selected === true ) ? '' : 'disabled']"
+                @click="clickDownload"
+              >download</button>
+            </div>
+          </div>
         </div>
       </div>
       <transition-group name="list" tag="div" class="list-images">
         <div
           :class="[image.selected ? 'list-images-item-selected' : '', 'list-images-item']"
-          v-for="image in images.slice((paginationNum-1)*countImageOnPagination,paginationNum*countImageOnPagination)"
+          v-for="image in images.slice((paginationNum-1)*countImagesOnPagination,paginationNum*countImagesOnPagination)"
           :key="image.key"
         >
           <img
@@ -48,32 +54,13 @@
           >
         </div>
       </transition-group>
-      <ul class="pagination center-align" v-if="images.length">
-        <li
-          v-if="Math.ceil(images.length/countImageOnPagination) >= 2"
-          :class="[paginationNum === 1 ? 'disabled' : 'waves-effect']"
-        >
-          <a @click="clickPaginationItem(paginationNum-1)" :href="'#'+ paginationNumPrev">
-            <i class="material-icons">chevron_left</i>
-          </a>
-        </li>
-        <li
-          v-if="paginationNum < number+countVisiblePaginationNum && paginationNum > number-countVisiblePaginationNum"
-          :class="[number === paginationNum ? 'active' : '','waves-effect']"
-          v-for="number in Math.ceil(this.images.length/this.countImageOnPagination)"
-          :key="number"
-        >
-          <a @click="clickPaginationItem(number)" :href="'#'+number">{{number}}</a>
-        </li>
-        <li
-          v-if="Math.ceil(images.length/countImageOnPagination) >= 2"
-          :class="[Math.ceil(this.images.length/this.countImageOnPagination) === paginationNum ? 'disabled' : 'waves-effect']"
-        >
-          <a @click="clickPaginationItem(paginationNum+1)" :href="'#'+paginationNumNext">
-            <i class="material-icons">chevron_right</i>
-          </a>
-        </li>
-      </ul>
+      <pagination
+        v-if="images.length"
+        :minPaginationNum="minPaginationNum"
+        :maxPaginationNum="maxPaginationNum"
+        :countVisiblePaginationNum="countVisiblePaginationNum"
+        :paginationNum="paginationNum"
+      ></pagination>
       <div class="progress" v-if="pendingWorkWithImages">
         <div class="indeterminate"></div>
       </div>
@@ -82,42 +69,31 @@
 </template>
 
 <script>
-import { mapMutations, mapActions, mapGetters } from 'vuex'
+import { mapMutations, mapActions, mapState } from 'vuex'
+import Pagination from './Pagination'
 export default {
   name: 'Dashboard',
+  components: {Pagination},
   data () {
     return {
-      paginationNum: 1,
+      paginationNum: +this.$route.params.page,
+      minPaginationNum: 1,
+      maxPaginationNum: null,
       countVisiblePaginationNum: 10,
-      countImageOnPagination: 12,
+      countImagesOnPagination: 12,
       isBtnRemoveActive: false,
       isBtnDownloadActive: false
     }
   },
-  created () {
-    if (!this.images.length && this.responseGetImages.pending !== true) {
+  mounted () {
+    const {countImagesOnPagination, images, responseGetImages} = this
+    this.maxPaginationNum = Math.ceil(images.length / countImagesOnPagination)
+    if (!images.length && responseGetImages.pending !== true) {
       this.getImages()
     }
   },
   computed: {
-    ...mapGetters('imagesModule', {
-      images: 'getImages',
-      responseGetImages: 'getResponseGetImages',
-      responseDeleteImages: 'getResponseDeleteImages',
-      responseAddImage: 'getResponseAddImage'
-    }),
-    ...mapGetters('imagesModule', ['pendingWorkWithImages']),
-    paginationNumNext () {
-      let countPagination = Math.ceil(
-        this.images.length / this.countImageOnPagination
-      )
-      return countPagination === this.paginationNum
-        ? countPagination
-        : this.paginationNum + 1
-    },
-    paginationNumPrev () {
-      return this.paginationNum === 1 ? 1 : this.paginationNum - 1
-    }
+    ...mapState('imagesModule', ['images', 'responseGetImages', 'pendingWorkWithImages'])
   },
   methods: {
     ...mapActions('imagesModule', [
@@ -147,16 +123,18 @@ export default {
       if (this.isBtnDownloadActive) {
         this.downloadImages()
       }
+    }
+  },
+  watch: {
+    '$route' (to, from) {
+      this.paginationNum = +to.params.page
     },
-    clickPaginationItem (number) {
-      if (
-        number === 0 ||
-        number ===
-          Math.ceil(this.images.length / this.countImageOnPagination) + 1
-      ) {
-        return
+    images () {
+      const {images, countImagesOnPagination} = this
+      this.maxPaginationNum = images && Math.ceil(images.length / countImagesOnPagination)
+      if (!+this.$route.params.page || +this.$route.params.page < this.minPaginationNum || +this.$route.params.page > this.maxPaginationNum) {
+        this.$router.replace('/dashboard/1')
       }
-      this.paginationNum = number
     }
   }
 }
@@ -197,5 +175,14 @@ export default {
   transition: all .5s
   position: absolute
   transform: translateX(-30px)
+@media screen and (max-width: 1200px)
+  .list-images
+    grid-template-columns: repeat(3,1fr)
+@media screen and (max-width: 600px)
+  .list-images
+    grid-template-columns: repeat(2,1fr)
+@media screen and (max-width: 480px)
+  .list-images
+    grid-template-columns: repeat(1,1fr)
 
 </style>

@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '@/components/Home'
-import SignIn from '@/components/SignIn'
-import SignUp from '@/components/SignUp'
-import Dashboard from '@/components/Dashboard'
+const Home = () => import('@/components/Home')
+const SignUp = () => import('@/components/SignUp')
+const Dashboard = () => import('@/components/Dashboard')
+const SignIn = () => import('@/components/SignIn')
 
 Vue.use(Router)
 
@@ -12,10 +12,7 @@ const router = new Router({
   routes: [{
     path: '/',
     name: 'home',
-    component: Home,
-    meta: {
-      user: true
-    }
+    component: Home
   },
   {
     path: '/sign-in',
@@ -34,11 +31,10 @@ const router = new Router({
     }
   },
   {
-    path: '/dashboard',
+    path: '/dashboard/:page',
     name: 'dashboard',
     component: Dashboard,
     meta: {
-      requireAuth: true,
       user: true
     }
   },
@@ -50,17 +46,11 @@ const router = new Router({
 })
 router.beforeEach((to, from, next) => {
   const userToken = JSON.parse(Vue.localStorage.get('user_token'))
-  if (to.meta.requireAuth && userToken) {
-    next()
-  }
-  if (to.meta.requireAuth && !userToken) {
+  if (to.meta.user && !userToken) {
     next('signin')
   }
-  if (to.meta.user && userToken) {
-    next()
-  }
-  if (!to.meta.user && userToken) {
-    next('dashboard')
+  if (to.meta.user === false && userToken) {
+    next('dashboard/1')
   }
   next()
 })

@@ -14,7 +14,7 @@ const getDefaultState = () => ({
   responseDownloadImages: {}
 })
 
-const userModule = {
+const imageModule = {
   namespaced: true,
   state: getDefaultState(),
   getters: {
@@ -26,18 +26,6 @@ const userModule = {
     },
     pendingWorkWithImages: state => {
       return state.responseAddImage.pending === true || state.responseDeleteImages.pending === true || state.responseGetImages.pending === true
-    },
-    getImages: state => {
-      return state.images
-    },
-    getResponseGetImages: state => {
-      return state.responseGetImages
-    },
-    getResponseDeleteImages: state => {
-      return state.responseDeleteImages
-    },
-    getResponseAddImages: state => {
-      return state.responseAddImage
     }
   },
   mutations: {
@@ -86,6 +74,18 @@ const userModule = {
     },
     getImagesSuccess (state, payload) {
       state.responseGetImages = payload
+      const { data } = payload
+      let images = []
+      for (let key in data) {
+        images.push({
+          key: +key,
+          name: data[key].name,
+          url: data[key].url,
+          selected: false
+        })
+      }
+      state.numberInsertNext = +Object.keys(data)[Object.keys(data).length - 1]
+      state.images = images
     },
     getImagesError (state, payload) {
       state.responseGetImages = payload
@@ -148,25 +148,9 @@ const userModule = {
           commit('getImagesSuccess', {
             pending: false,
             status: 'success',
-            message: 'images was found'
+            message: 'images was found',
+            data: images.data()
           })
-          const data = images.data()
-          for (let key in data) {
-            commit('addImageSuccess', {
-              response: {
-                pending: false,
-                status: 'success',
-                message: 'add image success'
-              },
-              imageInfo: {
-                key: +key,
-                name: data[key].name,
-                url: data[key].url,
-                selected: false
-              }
-            })
-            commit('updateNumberInsertNext', +key)
-          }
         } else {
           commit('getImagesError', {
             pending: false,
@@ -343,4 +327,4 @@ const userModule = {
   }
 }
 
-export default userModule
+export default imageModule

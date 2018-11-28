@@ -2,21 +2,17 @@
   <div id="app">
     <header class="page-header blue-grey">
       <div class="row">
-        <div class="col s1">
+        <div class="col s12 m7">
           <div class="logo">
             <router-link to="/">
               <i class="material-icons large orange-text">image</i>
             </router-link>
           </div>
         </div>
-        <div class="col s11 right-align">
+        <div class="col s12 m5 right-align">
           <router-link class="waves-effect waves-teal btn green" v-if="!user" to="/sign-in">Sign in</router-link>
           <router-link class="waves-effect waves-teal btn green" v-if="!user" to="/sign-up">Sign up</router-link>
-          <router-link
-            v-if="user"
-            class="user-email card-panel blue-text text-darken-2"
-            to="/dashboard"
-          >{{ user.email }}</router-link>
+          <router-link v-if="user" class="btn" to="/dashboard/1">{{ user.email }}</router-link>
           <button class="waves-effect waves-light btn" v-if="user" v-on:click="logOut">Log out</button>
         </div>
       </div>
@@ -38,7 +34,7 @@
   </div>
 </template>
 <script>
-import { mapMutations, mapGetters } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 
 export default {
   name: 'App',
@@ -48,10 +44,10 @@ export default {
     logOut () {
       this.resetUser()
       this.resetImages()
-      this.$router.replace('sign-in')
+      this.$router.push('/sign-in')
     }
   },
-  computed: mapGetters('userModule', { user: 'getUser' }),
+  computed: mapState('userModule', ['user']),
   created () {
     if (this.$localStorage.get('user_token') !== null) {
       this.saveUser()
@@ -71,8 +67,8 @@ export default {
     .logo
       a
         border: none
-    .user-email
-      padding: 10px
+  .btn
+    margin: 2px
   #app
     display: flex
     align-items: center

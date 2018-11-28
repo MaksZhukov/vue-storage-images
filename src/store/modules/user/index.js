@@ -15,14 +15,6 @@ const getDefaultState = () => ({
 const userModule = {
   namespaced: true,
   state: getDefaultState(),
-  getters: {
-    getUser: state => {
-      return state.user
-    },
-    getSignInResponse: state => {
-      return state.signInResponse
-    }
-  },
   mutations: {
     saveUser (state) {
       const user = firebase.auth().currentUser
@@ -91,7 +83,7 @@ const userModule = {
         const {message, status} = state.signInResponse
         toast(message, 3000, status)
         if (status === 'success') {
-          router.push('dashboard')
+          router.push('dashboard/1')
         }
       } catch (error) {
         commit('signInError', { status: 'error', message: error, pending: false })
@@ -105,7 +97,7 @@ const userModule = {
         commit('saveUser', user)
         const {message, status} = state.signInWithGoogleResponse
         toast(message, 3000, status)
-        router.push('dashboard')
+        router.push('dashboard/1')
       } catch (error) {
         const {message} = error
         commit('signInWithGoogleError', { status: 'error', message, pending: false })
